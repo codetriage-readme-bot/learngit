@@ -353,5 +353,26 @@ Git非常清楚地告诉我们，**readme.txt** 被修改了，而 **LICENSE** �
 
 现在，使用两次命令 **git add**，把 **readme.txt** 和 **LICENSE** 都添加后，用 **git status** 再查看一下：
 
+	$ git status
+	# On branch master
+	# Changes to be committed:
+	#   (use "git reset HEAD <file>..." to unstage)
+	#
+	#       new file:   LICENSE
+	#       modified:   readme.txt
+	#
+
+现在，暂存区的状态就变成这样了：
+
+![](http://www.liaoxuefeng.com/files/attachments/001384907720458e56751df1c474485b697575073c40ae9000/0)
+
+所以，**git add** 命令实际上就是把要提交的所有修改放到暂存区（Stage），然后，执行 **git commit** 就可以一次性把暂存区的所有修改提交到分支。
+
+	$ git commit -m "understand how stage works"
+	[master 27c9860] understand how stage works
+	 2 files changed, 675 insertions(+)
+	 create mode 100644 LICENSE
+
+
 #5 远程仓库
 
