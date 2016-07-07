@@ -373,6 +373,62 @@ Git非常清楚地告诉我们，**readme.txt** 被修改了，而 **LICENSE** �
 	 2 files changed, 675 insertions(+)
 	 create mode 100644 LICENSE
 
+一旦提交后，如果你又没有对工作区做任何修改，那么工作区就是“干净”的：
+
+	$ git status
+	# On branch master
+	nothing to commit (working directory clean)
+
+现在版本库变成了这样，暂存区就没有任何内容了：
+
+![](http://www.liaoxuefeng.com/files/attachments/0013849077337835a877df2d26742b88dd7f56a6ace3ecf000/0)
+
+##小结
+
+暂存区是Git非常重要的概念，弄明白了暂存区，就弄明白了Git的很多操作到底干了什么。
+
+没弄明白暂存区是怎么回事的童鞋，请向上滚动页面，再看一次。
+
+##管理修改
+
+现在，假定你已经完全掌握了暂存区的概念。下面，我们要讨论的就是，为什么Git比其他版本控制系统设计得优秀，因为Git跟踪并管理的是修改，而非文件。
+
+你会问，什么是修改？比如你新增了一行，这就是一个修改，删除了一行，也是一个修改，更改了某些字符，也是一个修改，删了一些又加了一些，也是一个修改，甚至创建一个新文件，也算一个修改。
+
+为什么说Git管理的是修改，而不是文件呢？我们还是做实验。第一步，对readme.txt做一个修改，比如加一行内容：
+
+	$ cat readme.txt
+	Git is a distributed version control system.
+	Git is free software distributed under the GPL.
+	Git has a mutable index called stage.
+	Git tracks changes.
+
+然后，添加：
+
+	$ git add readme.txt
+	$ git status
+	# On branch master
+	# Changes to be committed:
+	#   (use "git reset HEAD <file>..." to unstage)
+	#
+	#       modified:   readme.txt
+	#
+
+然后，再修改readme.txt：
+
+	$ cat readme.txt 
+	Git is a distributed version control system.
+	Git is free software distributed under the GPL.
+	Git has a mutable index called stage.
+	Git tracks changes of files.
+
+提交：
+
+	$ git commit -m "git tracks changes"
+	[master d4f25b6] git tracks changes
+	 1 file changed, 1 insertion(+)
+	
+
 
 #5 远程仓库
 
