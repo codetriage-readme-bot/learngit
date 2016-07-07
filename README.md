@@ -1,4 +1,4 @@
-#Git教程
+#<a target="_blank" href="http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/">**廖雪峰的Git教程**</a>
 
 #1 Git简介
 ##Git的诞生
@@ -428,7 +428,338 @@ Git非常清楚地告诉我们，**readme.txt** 被修改了，而 **LICENSE** �
 	[master d4f25b6] git tracks changes
 	 1 file changed, 1 insertion(+)
 	
+提交后，再看看状态：
 
+	$ git status
+	# On branch master
+	# Changes not staged for commit:
+	#   (use "git add <file>..." to update what will be committed)
+	#   (use "git checkout -- <file>..." to discard changes in working directory)
+	#
+	#       modified:   readme.txt
+	#
+	no changes added to commit (use "git add" and/or "git commit -a")
+
+咦，怎么第二次的修改没有被提交？
+
+别激动，我们回顾一下操作过程：
+
+第一次修改 -> **git add** -> 第二次修改 -> **git commit**
+
+你看，我们前面讲了，Git管理的是修改，当你用 **git add** 命令后，在工作区的第一次修改被放入暂存区，准备提交，但是，在工作区的第二次修改并没有放入暂存区，所以，**git commit** 只负责把暂存区的修改提交了，也就是第一次的修改被提交了，第二次的修改不会被提交。
+
+提交后，用 **git diff HEAD -- readme.txt** 命令可以查看工作区和版本库里面最新版本的区别：
+
+	$ git diff HEAD -- readme.txt 
+	diff --git a/readme.txt b/readme.txt
+	index 76d770f..a9c5755 100644
+	--- a/readme.txt
+	+++ b/readme.txt
+	@@ -1,4 +1,4 @@
+	 Git is a distributed version control system.
+	 Git is free software distributed under the GPL.
+	 Git has a mutable index called stage.
+	-Git tracks changes.
+	+Git tracks changes of files.
+
+可见，第二次修改确实没有被提交。
+
+那怎么提交第二次修改呢？你可以继续 **git add** 再 **git commit**，也可以别着急提交第一次修改，先 **git add** 第二次修改，再 **git commit**，就相当于把两次修改合并后一块提交了：
+
+第一次修改 -> **git add** -> 第二次修改 -> **git add** -> **git commit**
+
+好，现在，把第二次修改提交了，然后开始小结。
+
+##小结
+
+现在，你又理解了Git是如何跟踪修改的，每次修改，如果不 **add** 到暂存区，那就不会加入到 **commit** 中。
+
+##撤销修改
+自然，你是不会犯错的。不过现在是凌晨两点，你正在赶一份工作报告，你在 **readme.txt** 中添加了一行：
+
+$ cat readme.txt
+Git is a distributed version control system.
+Git is free software distributed under the GPL.
+Git has a mutable index called stage.
+Git tracks changes of files.
+My stupid boss still prefers SVN.
+
+在你准备提交前，一杯咖啡起了作用，你猛然发现了“stupid boss”可能会让你丢掉这个月的奖金！
+
+既然错误发现得很及时，就可以很容易地纠正它。你可以删掉最后一行，手动把文件恢复到上一个版本的状态。如果用 **git status** 查看一下：
+
+	$ git status
+	# On branch master
+	# Changes not staged for commit:
+	#   (use "git add <file>..." to update what will be committed)
+	#   (use "git checkout -- <file>..." to discard changes in working directory)
+	#
+	#       modified:   readme.txt
+	#
+	no changes added to commit (use "git add" and/or "git commit -a")
+
+你可以发现，Git会告诉你，**git checkout -- file** 可以丢弃工作区的修改：
+
+	$ git checkout -- readme.txt
+
+命令 **git checkout -- readme.txt** 意思就是，把 **readme.txt** 文件在工作区的修改全部撤销，这里有两种情况：
+
+一种是 **readme.txt** 自修改后还没有被放到暂存区，现在，撤销修改就回到和版本库一模一样的状态；
+
+一种是 **readme.txt** 已经添加到暂存区后，又作了修改，现在，撤销修改就回到添加到暂存区后的状态。
+
+总之，就是让这个文件回到最近一次 **git commit** 或 **git add** 时的状态。
+
+现在，看看 **readme.txt** 的文件内容：
+
+	$ cat readme.txt
+	Git is a distributed version control system.
+	Git is free software distributed under the GPL.
+	Git has a mutable index called stage.
+	Git tracks changes of files.
+
+文件内容果然复原了。
+
+**git checkout -- file** 命令中的 **--** 很重要，没有 **--**，就变成了“切换到另一个分支”的命令，我们在后面的分支管理中会再次遇到 **git checkout** 命令。
+
+现在假定是凌晨3点，你不但写了一些胡话，还git add到暂存区了：
+
+	$ cat readme.txt
+	Git is a distributed version control system.
+	Git is free software distributed under the GPL.
+	Git has a mutable index called stage.
+	Git tracks changes of files.
+	My stupid boss still prefers SVN.
+	
+	$ git add readme.txt
+
+庆幸的是，在 **commit** 之前，你发现了这个问题。用 **git status** 查看一下，修改只是添加到了暂存区，还没有提交：
+
+	$ git status
+	# On branch master
+	# Changes to be committed:
+	#   (use "git reset HEAD <file>..." to unstage)
+	#
+	#       modified:   readme.txt
+	#
+
+Git同样告诉我们，用命令 **git reset HEAD file** 可以把暂存区的修改撤销掉（unstage），重新放回工作区：
+
+$ git reset HEAD readme.txt
+Unstaged changes after reset:
+M       readme.txt
+
+**git reset** 命令既可以回退版本，也可以把暂存区的修改回退到工作区。当我们用 **HEAD** 时，表示最新的版本。
+
+再用 **git status** 查看一下，现在暂存区是干净的，工作区有修改：
+
+	$ git status
+	# On branch master
+	# Changes not staged for commit:
+	#   (use "git add <file>..." to update what will be committed)
+	#   (use "git checkout -- <file>..." to discard changes in working directory)
+	#
+	#       modified:   readme.txt
+	#
+	no changes added to commit (use "git add" and/or "git commit -a")
+
+还记得如何丢弃工作区的修改吗？
+
+	$ git checkout -- readme.txt
+	
+	$ git status
+	# On branch master
+	nothing to commit (working directory clean)
+	
+整个世界终于清静了！
+
+现在，假设你不但改错了东西，还从暂存区提交到了版本库，怎么办呢？还记得<a target="_blank" href="http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/0013744142037508cf42e51debf49668810645e02887691000">**版本回退**</a>一节吗？可以回退到上一个版本。不过，这是有条件的，就是你还没有把自己的本地版本库推送到远程。还记得Git是分布式版本控制系统吗？我们后面会讲到远程版本库，一旦你把“stupid boss”提交推送到远程版本库，你就真的惨了……
+
+##小结
+
+又到了小结时间。
+
+场景1：当你改乱了工作区某个文件的内容，想直接丢弃工作区的修改时，用命令git checkout -- file。
+
+场景2：当你不但改乱了工作区某个文件的内容，还添加到了暂存区时，想丢弃修改，分两步，第一步用命令git reset HEAD file，就回到了场景1，第二步按场景1操作。
+
+场景3：已经提交了不合适的修改到版本库时，想要撤销本次提交，参考版本回退一节，不过前提是没有推送到远程库。
+
+##删除文件
+在Git中，删除也是一个修改操作，我们实战一下，先添加一个新文件test.txt到Git并且提交：
+
+	$ git add test.txt
+	$ git commit -m "add test.txt"
+	[master 94cdc44] add test.txt
+	 1 file changed, 1 insertion(+)
+	 create mode 100644 test.txt
+
+一般情况下，你通常直接在文件管理器中把没用的文件删了，或者用 **rm** 命令删了：
+
+	$ rm test.txt
+
+这个时候，Git知道你删除了文件，因此，工作区和版本库就不一致了，**git status** 命令会立刻告诉你哪些文件被删除了：
+
+	$ git status
+	# On branch master
+	# Changes not staged for commit:
+	#   (use "git add/rm <file>..." to update what will be committed)
+	#   (use "git checkout -- <file>..." to discard changes in working directory)
+	#
+	#       deleted:    test.txt
+	#
+	no changes added to commit (use "git add" and/or "git commit -a")
+
+现在你有两个选择，一是确实要从版本库中删除该文件，那就用命令 **git rm** 删掉，并且 **git commit**：
+
+	$ git rm test.txt
+	rm 'test.txt'
+	$ git commit -m "remove test.txt"
+	[master d17efd8] remove test.txt
+	 1 file changed, 1 deletion(-)
+	 delete mode 100644 test.txt
+
+现在，文件就从版本库中被删除了。
+
+另一种情况是删错了，因为版本库里还有呢，所以可以很轻松地把误删的文件恢复到最新版本：
+
+	$ git checkout -- test.txt
+
+**git checkout** 其实是用版本库里的版本替换工作区的版本，无论工作区是修改还是删除，都可以“一键还原”。
+
+小结
+
+命令 **git rm** 用于删除一个文件。如果一个文件已经被提交到版本库，那么你永远不用担心误删，但是要小心，你只能恢复文件到最新版本，你会丢失**最近一次提交后你修改的内容**。
 
 #5 远程仓库
+
+到目前为止，我们已经掌握了如何在Git仓库里对一个文件进行时光穿梭，你再也不用担心文件备份或者丢失的问题了。
+
+可是有用过集中式版本控制系统SVN的童鞋会站出来说，这些功能在SVN里早就有了，没看出Git有什么特别的地方。
+
+没错，如果只是在一个仓库里管理文件历史，Git和SVN真没啥区别。为了保证你现在所学的Git物超所值，将来绝对不会后悔，同时为了打击已经不幸学了SVN的童鞋，本章开始介绍Git的杀手级功能之一（注意是之一，也就是后面还有之二，之三……）：远程仓库。
+
+Git是分布式版本控制系统，同一个Git仓库，可以分布到不同的机器上。怎么分布呢？最早，肯定只有一台机器有一个原始版本库，此后，别的机器可以“克隆”这个原始版本库，而且每台机器的版本库其实都是一样的，并没有主次之分。
+
+你肯定会想，至少需要两台机器才能玩远程库不是？但是我只有一台电脑，怎么玩？
+
+其实一台电脑上也是可以克隆多个版本库的，只要不在同一个目录下。不过，现实生活中是不会有人这么傻的在一台电脑上搞几个远程库玩，因为一台电脑上搞几个远程库完全没有意义，而且硬盘挂了会导致所有库都挂掉，所以我也不告诉你在一台电脑上怎么克隆多个仓库。
+
+实际情况往往是这样，找一台电脑充当服务器的角色，每天24小时开机，其他每个人都从这个“服务器”仓库克隆一份到自己的电脑上，并且各自把各自的提交推送到服务器仓库里，也从服务器仓库中拉取别人的提交。
+
+完全可以自己搭建一台运行Git的服务器，不过现阶段，为了学Git先搭个服务器绝对是小题大作。好在这个世界上有个叫 <a target="_blank" href="https://github.com/">GitHub</a> 的神奇的网站，从名字就可以看出，这个网站就是提供Git仓库托管服务的，所以，只要注册一个GitHub账号，就可以免费获得Git远程仓库。
+
+在继续阅读后续内容前，请自行注册GitHub账号。由于你的本地Git仓库和GitHub仓库之间的传输是通过SSH加密的，所以，需要一点设置：
+
+第1步：创建SSH Key。在用户主目录下，看看有没有.ssh目录，如果有，再看看这个目录下有没有 **id_rsa** 和 **id_rsa.pub** 这两个文件，如果已经有了，可直接跳到下一步。如果没有，打开Shell（Windows下打开Git Bash），创建SSH Key：
+
+	$ ssh-keygen -t rsa -C "youremail@example.com"
+
+你需要把邮件地址换成你自己的邮件地址，然后一路回车，使用默认值即可，由于这个Key也不是用于军事目的，所以也无需设置密码。
+
+如果一切顺利的话，可以在用户主目录里找到 **.ssh** 目录，里面有**id_rsa** 和 **id_rsa.pub** 两个文件，这两个就是SSH Key的秘钥对，**id_rsa** 是私钥，不能泄露出去，**id_rsa.pub** 是公钥，可以放心地告诉任何人。
+
+第2步：登陆GitHub，打开“Account settings”，“SSH Keys”页面：
+
+然后，点“Add SSH Key”，填上任意Title，在Key文本框里粘贴**id_rsa.pub** 文件的内容：
+
+![](http://www.liaoxuefeng.com/files/attachments/001384908342205cc1234dfe1b541ff88b90b44b30360da000/0)
+
+点“Add Key”，你就应该看到已经添加的Key：
+
+![](http://www.liaoxuefeng.com/files/attachments/0013849083502905a4caa2dc6984acd8e39aa5ae5ad6c83000/0)
+
+为什么GitHub需要SSH Key呢？因为GitHub需要识别出你推送的提交确实是你推送的，而不是别人冒充的，而Git支持SSH协议，所以，GitHub只要知道了你的公钥，就可以确认只有你自己才能推送。
+
+当然，GitHub允许你添加多个Key。假定你有若干电脑，你一会儿在公司提交，一会儿在家里提交，只要把每台电脑的Key都添加到GitHub，就可以在每台电脑上往GitHub推送了。
+
+最后友情提示，在GitHub上免费托管的Git仓库，任何人都可以看到喔（但只有你自己才能改）。所以，不要把敏感信息放进去。
+
+如果你不想让别人看到Git库，有两个办法，一个是交点保护费，让GitHub把公开的仓库变成私有的，这样别人就看不见了（不可读更不可写）。另一个办法是自己动手，搭一个Git服务器，因为是你自己的Git服务器，所以别人也是看不见的。这个方法我们后面会讲到的，相当简单，公司内部开发必备。
+
+确保你拥有一个GitHub账号后，我们就即将开始远程仓库的学习。
+
+##小结
+
+“有了远程仓库，妈妈再也不用担心我的硬盘了。”——Git点读机
+
+##添加远程库
+
+现在的情景是，你已经在本地创建了一个Git仓库后，又想在GitHub创建一个Git仓库，并且让这两个仓库进行远程同步，这样，GitHub上的仓库既可以作为备份，又可以让其他人通过该仓库来协作，真是一举多得。
+
+首先，登陆GitHub，然后，在右上角找到“Create a new repo”按钮，创建一个新的仓库：
+
+![](http://www.liaoxuefeng.com/files/attachments/0013849084639042e9b7d8d927140dba47c13e76fe5f0d6000/0)
+
+在Repository name填入 **learngit**，其他保持默认设置，点击“Create repository”按钮，就成功地创建了一个新的Git仓库：
+
+![](http://www.liaoxuefeng.com/files/attachments/0013849084720379a3eae576b9f417da2add578c8612a2e000/0)
+
+目前，在GitHub上的这个 **learngit** 仓库还是空的，GitHub告诉我们，可以从这个仓库克隆出新的仓库，也可以把一个已有的本地仓库与之关联，然后，把本地仓库的内容推送到GitHub仓库。
+
+现在，我们根据GitHub的提示，在本地的 **learngit** 仓库下运行命令：
+
+	$ git remote add origin git@github.com:michaelliao/learngit.git
+
+请千万注意，把上面的 **michaelliao** 替换成你自己的GitHub账户名，否则，你在本地关联的就是我的远程库，关联没有问题，但是你以后推送是推不上去的，因为你的SSH Key公钥不在我的账户列表中。
+
+添加后，远程库的名字就是 **origin**，这是Git默认的叫法，也可以改成别的，但是 **origin** 这个名字一看就知道是远程库。
+
+下一步，就可以把本地库的所有内容推送到远程库上：
+
+	$ git push -u origin master
+	Counting objects: 19, done.
+	Delta compression using up to 4 threads.
+	Compressing objects: 100% (19/19), done.
+	Writing objects: 100% (19/19), 13.73 KiB, done.
+	Total 23 (delta 6), reused 0 (delta 0)
+	To git@github.com:michaelliao/learngit.git
+	 * [new branch]      master -> master
+	Branch master set up to track remote branch master from origin.
+
+把本地库的内容推送到远程，用 **git push** 命令，实际上是把当前分支 **master** 推送到远程。
+
+由于远程库是空的，我们第一次推送 **master** 分支时，加上了 **-u** 参数，Git不但会把本地的 **master** 分支内容推送的远程新的 **master** 分支，还会把本地的 **master** 分支和远程的 **master** 分支关联起来，在以后的推送或者拉取时就可以简化命令。
+
+推送成功后，可以立刻在GitHub页面中看到远程库的内容已经和本地一模一样：
+
+![](http://www.liaoxuefeng.com/files/attachments/00138490848464619aebd9a2bb0493c83e132ca1eed6f66000/0)
+
+从现在起，只要本地作了提交，就可以通过命令：
+
+	$ git push origin master
+
+把本地 **master** 分支的最新修改推送至GitHub，现在，你就拥有了真正的分布式版本库！
+
+##SSH警告
+
+当你第一次使用Git的 **clone** 或者 **push** 命令连接GitHub时，会得到一个警告：
+
+	The authenticity of host 'github.com (xx.xx.xx.xx)' can't be established.
+	RSA key fingerprint is xx.xx.xx.xx.xx.
+	Are you sure you want to continue connecting (yes/no)?
+
+这是因为Git使用SSH连接，而SSH连接在第一次验证GitHub服务器的Key时，需要你确认GitHub的Key的指纹信息是否真的来自GitHub的服务器，输入 **yes** 回车即可。
+
+Git会输出一个警告，告诉你已经把GitHub的Key添加到本机的一个信任列表里了：
+
+	Warning: Permanently added 'github.com' (RSA) to the list of known hosts.
+
+这个警告只会出现一次，后面的操作就不会有任何警告了。
+
+如果你实在担心有人冒充GitHub服务器，输入 **yes** 前可以对照
+<a target="_blank" href="https://help.github.com/articles/what-are-github-s-ssh-key-fingerprints/">GitHub的RSA Key的指纹信息</a>是否与SSH连接给出的一致。
+
+小结
+
+要关联一个远程库，使用命令 **git remote add origin git@server-name:path/repo-name.git**；
+
+关联后，使用命令 **git push -u origin master** 第一次推送**master** 分支的所有内容；
+
+此后，每次本地提交后，只要有必要，就可以使用命令 **git push origin master** 推送最新修改；
+
+分布式版本系统的最大好处之一是在本地工作完全不需要考虑远程库的存在，也就是有没有联网都可以正常工作，而SVN在没有联网的时候是拒绝干活的！当有网络的时候，再把本地提交推送一下就完成了同步，真是太方便了！
+
+
+
 
